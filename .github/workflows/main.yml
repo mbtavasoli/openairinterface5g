@@ -3,9 +3,6 @@ name: Build & Push OAI gNB image
 on:
   push:
     branches: [ develop ]
-    paths:
-      - 'docker/**'
-      - '.github/workflows/build-ran.yml'
   workflow_dispatch:
 
 env:
