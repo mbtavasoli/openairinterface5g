@@ -1304,8 +1304,25 @@ static void set_SR_periodandoffset(NR_SchedulingRequestResourceConfig_t *schedul
   schedulingRequestResourceConfig->periodicityAndOffset = calloc(1,sizeof(*schedulingRequestResourceConfig->periodicityAndOffset));
 
   if(sr_slot < 10 && scs < NR_SubcarrierSpacing_kHz60){
-    schedulingRequestResourceConfig->periodicityAndOffset->present = NR_SchedulingRequestResourceConfig__periodicityAndOffset_PR_sl10;
-    schedulingRequestResourceConfig->periodicityAndOffset->choice.sl10 = sr_slot;
+	if (scc && scc->tdd_UL_DL_ConfigurationCommon) {
+      const NR_TDD_UL_DL_Pattern_t *pattern1 = &scc->tdd_UL_DL_ConfigurationCommon->pattern1;
+      double tdd_period_idx = pattern1 ? pattern1->dl_UL_TransmissionPeriodicity : 0.0;
+      if (tdd_period_idx == 4) {
+         schedulingRequestResourceConfig->periodicityAndOffset->present = NR_SchedulingRequestResourceConfig__periodicityAndOffset_PR_sl4;
+    	 schedulingRequestResourceConfig->periodicityAndOffset->choice.sl4 = sr_slot;
+    	 LOG_I(NR_MAC, "[SR CONFIG] SR periodicity set to 4 slots (2 ms), offset=%d\n", sr_slot);
+      } else if (tdd_period_idx == 5) {
+         schedulingRequestResourceConfig->periodicityAndOffset->present = NR_SchedulingRequestResourceConfig__periodicityAndOffset_PR_sl5;
+    	 schedulingRequestResourceConfig->periodicityAndOffset->choice.sl5 = sr_slot;
+    	 LOG_I(NR_MAC, "[SR CONFIG] SR periodicity set to 5 slots (2.5 ms), offset=%d\n", sr_slot);
+      } else {
+         schedulingRequestResourceConfig->periodicityAndOffset->present = NR_SchedulingRequestResourceConfig__periodicityAndOffset_PR_sl10;
+    	 schedulingRequestResourceConfig->periodicityAndOffset->choice.sl10 = sr_slot;
+    	 LOG_I(NR_MAC, "[SR CONFIG] SR periodicity set to 10 slots (5 ms), offset=%d\n", sr_slot);
+        }
+    }
+    // schedulingRequestResourceConfig->periodicityAndOffset->present = NR_SchedulingRequestResourceConfig__periodicityAndOffset_PR_sl10;
+    // schedulingRequestResourceConfig->periodicityAndOffset->choice.sl10 = sr_slot;
     return;
   }
   else if(sr_slot < 20 && scs < NR_SubcarrierSpacing_kHz120){
